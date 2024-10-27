@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华佗GPT II</title>
+    <style>
+        /* Reset and basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f0f8;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #f5eaf8;
+            width: 60%;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+        }
+
+        .chat-box {
+            margin: 20px 0;
+        }
+
+        .message {
+            background-color: #e5d1e7;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1em;
+        }
+
+        .input-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .send-button {
+            background-color: #a862d4;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .send-button:hover {
+            background-color: #8a4db8;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Dialog box styling */
+        .dialog-box {
+            background-color: #ffffff;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 15px; /* Rounded corners for all four corners */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.1em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="logo.png" alt="Logo" class="logo">
+            <h1>华佗GPT II</h1>
+        </header>
+
+        <div class="chat-box">
+            <div class="message">
+                <p>你好，我是一个解答医疗健康问题的大模型，目前处于测试阶段，请以医嘱为准。请问有什么可以帮助您？</p>
+                <p>Hello, I am a large medical language model, please refer to the doctor's advice in any cases because it is currently in the testing stage. How can I help you?</p>
+            </div>
+        </div>
+
+        <!-- New dialog box with rounded corners -->
+        <div class="dialog-box">
+            <p>这是一个对话框，四个角有圆弧。</p>
+        </div>
+
+        <div class="input-area">
+            <input type="text" placeholder="请输入文本" />
+            <button class="send-button">Send</button>
+        </div>
+
+    </div>
+
+    <script>
+        document.querySelector('.send-button').addEventListener('click', () => {
+            const input = document.querySelector('input[type="text"]');
+            if (input.value) {
+                alert(`You entered: ${input.value}`);
+                input.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
