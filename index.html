@@ -1,140 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>华佗GPT II</title>
+    <title>医疗咨询平台</title>
     <style>
-        /* Reset and basic styling */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f0f8;
-            color: #333;
+            background-color: #f4f4f4;
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            padding: 20px;
         }
 
         .container {
-            background-color: #f5eaf8;
-            width: 60%;
-            border-radius: 10px;
+            max-width: 600px;
+            margin: auto;
+            background: white;
             padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 10px;
-        }
-
-        .logo {
-            width: 40px;
-            height: 40px;
+            text-align: center;
+            margin-bottom: 20px;
         }
 
         .chat-box {
-            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
         }
 
         .message {
-            background-color: #e5d1e7;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1.1em;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            background-color: #e9ecef;
+            text-align: right;
+        }
+
+        .bot-message {
+            background-color: #007bff;
+            color: white;
+            text-align: left;
         }
 
         .input-area {
             display: flex;
             align-items: center;
-            gap: 10px;
         }
 
-        input[type="text"] {
+        #user-input {
             flex: 1;
             padding: 10px;
-            border: 2px solid #ccc;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 1em;
+            margin-right: 10px;
         }
 
-        .send-button {
-            background-color: #a862d4;
-            border: none;
-            color: #fff;
+        #send-btn {
             padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
             border-radius: 5px;
-            font-size: 1em;
             cursor: pointer;
-        }
-
-        .send-button:hover {
-            background-color: #8a4db8;
-        }
-
-        .footer {
-            text-align: center;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        /* Dialog box styling */
-        .dialog-box {
-            background-color: #ffffff;
-            width: 300px;
-            height: 300px;
-            margin: 20px auto;
-            padding: 20px;
-            border-radius: 15px; /* Rounded corners for all four corners */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 1.1em;
-            color: #333;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <header class="header">
-            <img src="logo.png" alt="Logo" class="logo">
-            <h1>华佗GPT II</h1>
-        </header>
-
-        <div class="chat-box">
-            <div class="message">
-                <p>你好，我是一个解答医疗健康问题的大模型，目前处于测试阶段，请以医嘱为准。请问有什么可以帮助您？</p>
-                <p>Hello, I am a large medical language model, please refer to the doctor's advice in any cases because it is currently in the testing stage. How can I help you?</p>
-            </div>
+        <div class="header">
+            <h1>医疗咨询平台</h1>
+            <p>请以医嘱为准</p>
         </div>
-
-        <!-- New dialog box with rounded corners -->
-        <div class="dialog-box">
-            <p>这是一个对话框，四个角有圆弧。</p>
+        <div class="chat-box" id="chat-box">
+            <!-- 聊天消息将在这里显示 -->
         </div>
-
         <div class="input-area">
-            <input type="text" placeholder="请输入文本" />
-            <button class="send-button">Send</button>
+            <input type="text" id="user-input" placeholder="输入您的问题...">
+            <button id="send-btn">发送</button>
         </div>
-
     </div>
 
     <script>
-        document.querySelector('.send-button').addEventListener('click', () => {
-            const input = document.querySelector('input[type="text"]');
-            if (input.value) {
-                alert(`You entered: ${input.value}`);
-                input.value = '';
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatBox = document.getElementById('chat-box');
+
+        window.onload = function () {
+            // 页面加载完成后，显示机器人的初始消息
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="message bot-message">您好！我是医疗咨询助手华佗GPT-II。请问有什么可以帮到您？</div>`;
+        };
+
+        // 监听输入框的键盘按下事件
+        userInput.addEventListener('keydown', function (event) {
+            // 检查是否按下了回车键
+            if (event.key === 'Enter') {
+                // 阻止默认的表单提交行为
+                event.preventDefault();
+                // 调用发送消息的函数
+                sendMessage();
             }
         });
+
+        // 监听发送按钮的点击事件
+        sendBtn.addEventListener('click', function () {
+            sendMessage();
+        });
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                // 显示用户消息
+                chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
+                // 清空输入框
+                userInput.value = '';
+                // 模拟机器人回复
+                simulateBotResponse(message);
+            }
+        }
+
+        function simulateBotResponse(message) {
+            // 这里可以添加与后端API通信的代码，以获取真实的机器人回复
+            // 目前只是模拟一个简单的回复
+            const botResponse = "这是模拟的机器人回复。";
+            setTimeout(() => {
+                chatBox.innerHTML += `<div class="message bot-message">${botResponse}</div>`;
+            }, 1000);
+        }
+
+        // 发送消息到服务器并获取回复
+        function sendToServerAndGetResponse(message) {
+            return fetch('/api/response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+                .then(response => response.json())
+                .then(data => data.reply);
+        }
     </script>
 </body>
+
 </html>
