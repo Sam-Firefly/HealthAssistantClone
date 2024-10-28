@@ -1,11 +1,11 @@
 # HealthAssistantClone
-1. **多轮对话功能**  
+### 1. **多轮对话功能**  
 通过修改提示词，引导kimi输出合适的网页
 ![V2](./asserts/1.png "多轮对话效果")
 对话框可以上下拖动查看历史记录
 按下回车键可以快捷发送消息  
 
-2. **后端接口**  
+### 2. **后端接口**  
 可以在代码末端更新JavaScript函数以实现请求服务器的功能
 ```JavaScript
         function simulateBotResponse(message) {
