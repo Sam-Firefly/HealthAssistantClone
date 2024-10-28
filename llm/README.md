@@ -14,6 +14,8 @@ TODO：
 
 ## 使用
 
+下载模型并放在`./HuatuoGPT2_7B/`
+
 ```
 conda create -n <name> python=3.12
 
