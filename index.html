@@ -104,11 +104,19 @@
       // 显示询问
       const showUserMessage = (message) => {
         chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
+        chatBox.scrollTo({
+          top: chatBox.scrollHeight,
+          behavior: 'smooth',
+        });
       };
 
       // 显示回答
       const showBotMessage = (message) => {
         chatBox.innerHTML += `<div class="message bot-message">${message}</div>`;
+        chatBox.scrollTo({
+          top: chatBox.scrollHeight,
+          behavior: 'smooth',
+        });
       };
 
       window.onload = () => {
@@ -153,7 +161,7 @@
         const botResponse = '这是模拟的机器人回复。';
         setTimeout(() => {
           showBotMessage(botResponse);
-        }, 1000);
+        }, 600);
       }
 
       // 提交问题。
