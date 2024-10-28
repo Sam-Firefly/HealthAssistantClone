@@ -1,7 +1,26 @@
 # HealthAssistantClone
+## V2版本更新
+### 1. 添加了app.py，用于启动服务，开放默认的 *http://127.0.0.1:5000* 端口
+![server](./asserts/server.png "多轮对话效果")
+#### USAGE
+1. 安装Flask和flask-cors包
+```BASH
+pip install Flask flask-cors
+```
+2. 启动服务
+```BASH
+python app.py
+```
+### 2. 相应的维护了cyy分支里面的代码，现在已经是可用状态
+  </br>
+    </br>
+      </br>
+
+  
+## V1
 ### 1. **多轮对话功能**  
 通过修改提示词，引导kimi输出合适的网页
-![V2](./asserts/1.png "多轮对话效果")
+![V2](./asserts/demo.png "多轮对话效果")
 对话框可以上下拖动查看历史记录
 按下回车键可以快捷发送消息  
 
