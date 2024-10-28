@@ -11,7 +11,7 @@ pip install Flask flask-cors
 ```BASH
 python app.py
 ```
-### 2. 相应的维护了cyy分支里面的代码，现在已经是可用状态
+### 2. 相应的维护了cyy分支里面的html代码，现在已经是可用状态
   </br>
     </br>
       </br>
