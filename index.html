@@ -94,16 +94,28 @@
     <script>
       const API_URL = '127.0.0.1';
 
-      let query_id = 0;
-
       const userInput = document.getElementById('user-input');
       const sendBtn = document.getElementById('send-btn');
       const chatBox = document.getElementById('chat-box');
 
+      // 修改以开启新对话
+      let query_id = 0;
+
+      // 显示询问
+      const showUserMessage = (message) => {
+        chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
+      };
+
+      // 显示回答
+      const showBotMessage = (message) => {
+        chatBox.innerHTML += `<div class="message bot-message">${message}</div>`;
+      };
+
       window.onload = () => {
         // 页面加载完成后，显示机器人的初始消息
-        const chatBox = document.getElementById('chat-box');
-        chatBox.innerHTML += `<div class="message bot-message">您好！我是医疗咨询助手华佗GPT-II。请问有什么可以帮到您？</div>`;
+        const initialMessage =
+          '您好！我是医疗咨询助手华佗GPT-II。请问有什么可以帮到您？';
+        showBotMessage(initialMessage);
       };
 
       // 监听输入框的键盘按下事件
@@ -127,7 +139,7 @@
         const message = userInput.value.trim();
         if (message) {
           // 显示用户消息
-          chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
+          showUserMessage(message);
           // 清空输入框
           userInput.value = '';
           // 发送请求
@@ -140,7 +152,7 @@
       function simulateBotResponse(message) {
         const botResponse = '这是模拟的机器人回复。';
         setTimeout(() => {
-          chatBox.innerHTML += `<div class="message bot-message">${botResponse}</div>`;
+          showBotMessage(botResponse);
         }, 1000);
       }
 
@@ -149,7 +161,7 @@
         const ansJson = sendToServerAndGetResponse(message);
         // TODO: 校对 `answer`
         const ans = ansJson.answer;
-        chatBox.innerHTML += `<div class="message bot-message">${ans}</div>`;
+        showBotMessage(ans);
       }
 
       // 发送问题到服务器并获取回复。
