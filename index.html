@@ -1,158 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>医疗咨询平台</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
 
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
 
-        .chat-box {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
-            margin-bottom: 20px;
-        }
+      .chat-box {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        height: 300px;
+        overflow-y: scroll;
+        margin-bottom: 20px;
+      }
 
-        .message {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-        }
+      .message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+      }
 
-        .user-message {
-            background-color: #e9ecef;
-            text-align: right;
-        }
+      .user-message {
+        background-color: #e9ecef;
+        text-align: right;
+      }
 
-        .bot-message {
-            background-color: #007bff;
-            color: white;
-            text-align: left;
-        }
+      .bot-message {
+        background-color: #007bff;
+        color: white;
+        text-align: left;
+      }
 
-        .input-area {
-            display: flex;
-            align-items: center;
-        }
+      .input-area {
+        display: flex;
+        align-items: center;
+      }
 
-        #user-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
+      #user-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
 
-        #send-btn {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+      #send-btn {
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>医疗咨询平台</h1>
-            <p>请以医嘱为准</p>
-        </div>
-        <div class="chat-box" id="chat-box">
-            <!-- 聊天消息将在这里显示 -->
-        </div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="输入您的问题...">
-            <button id="send-btn">发送</button>
-        </div>
+      <div class="header">
+        <h1>医疗咨询平台</h1>
+        <p>请以医嘱为准</p>
+      </div>
+      <div class="chat-box" id="chat-box">
+        <!-- 聊天消息将在这里显示 -->
+      </div>
+      <div class="input-area">
+        <input type="text" id="user-input" placeholder="输入您的问题..." />
+        <button id="send-btn">发送</button>
+      </div>
     </div>
 
     <script>
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
+      const API_URL = '127.0.0.1';
+
+      let query_id = 0;
+
+      const userInput = document.getElementById('user-input');
+      const sendBtn = document.getElementById('send-btn');
+      const chatBox = document.getElementById('chat-box');
+
+      window.onload = () => {
+        // 页面加载完成后，显示机器人的初始消息
         const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML += `<div class="message bot-message">您好！我是医疗咨询助手华佗GPT-II。请问有什么可以帮到您？</div>`;
+      };
 
-        window.onload = function () {
-            // 页面加载完成后，显示机器人的初始消息
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML += `<div class="message bot-message">您好！我是医疗咨询助手华佗GPT-II。请问有什么可以帮到您？</div>`;
-        };
-
-        // 监听输入框的键盘按下事件
-        userInput.addEventListener('keydown', function (event) {
-            // 检查是否按下了回车键
-            if (event.key === 'Enter') {
-                // 阻止默认的表单提交行为
-                event.preventDefault();
-                // 调用发送消息的函数
-                sendMessage();
-            }
-        });
-
-        // 监听发送按钮的点击事件
-        sendBtn.addEventListener('click', function () {
-            sendMessage();
-        });
-
-        function sendMessage() {
-            const message = userInput.value.trim();
-            if (message) {
-                // 显示用户消息
-                chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
-                // 清空输入框
-                userInput.value = '';
-                // 模拟机器人回复
-                simulateBotResponse(message);
-            }
+      // 监听输入框的键盘按下事件
+      userInput.addEventListener('keydown', (event) => {
+        // 检查是否按下了回车键
+        if (event.key === 'Enter') {
+          // 阻止默认的表单提交行为
+          event.preventDefault();
+          // 调用发送消息的函数
+          sendMessage();
         }
+      });
 
-        function simulateBotResponse(message) {
-            // 这里可以添加与后端API通信的代码，以获取真实的机器人回复
-            // 目前只是模拟一个简单的回复
-            const botResponse = "这是模拟的机器人回复。";
-            setTimeout(() => {
-                chatBox.innerHTML += `<div class="message bot-message">${botResponse}</div>`;
-            }, 1000);
-        }
+      // 监听发送按钮的点击事件
+      sendBtn.addEventListener('click', (event) => {
+        sendMessage();
+      });
 
-        // 发送消息到服务器并获取回复
-        function sendToServerAndGetResponse(message) {
-            return fetch('/api/response', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: message })
-            })
-                .then(response => response.json())
-                .then(data => data.reply);
+      // 提交消息事件。
+      function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+          // 显示用户消息
+          chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
+          // 清空输入框
+          userInput.value = '';
+          // 发送请求
+          simulateBotResponse(message);
+          //   handlePostingMessage(message);
         }
+      }
+
+      // Mock the response of `handlePostingQuestion`.
+      function simulateBotResponse(message) {
+        const botResponse = '这是模拟的机器人回复。';
+        setTimeout(() => {
+          chatBox.innerHTML += `<div class="message bot-message">${botResponse}</div>`;
+        }, 1000);
+      }
+
+      // 提交问题。
+      function handlePostingMessage(message) {
+        const ansJson = sendToServerAndGetResponse(message);
+        // TODO: 校对 `answer`
+        const ans = ansJson.answer;
+        chatBox.innerHTML += `<div class="message bot-message">${ans}</div>`;
+      }
+
+      // 发送问题到服务器并获取回复。
+      function sendToServerAndGetResponse(message) {
+        // TODO: 校对 `/api/response` 和 `body`请求体
+        return fetch(API_URL + '/api/response', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message,
+            query_id,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => data.reply);
+      }
     </script>
-</body>
-
+  </body>
 </html>
