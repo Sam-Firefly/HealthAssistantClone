@@ -8,8 +8,8 @@ from llm.engine_v1 import LlmEngine
 class HealthAssistantServer:
     def __init__(self):
         logging.info('Starting HealthAssistantServer...')
-
         warnings.filterwarnings('ignore', category=FutureWarning)
+
         parser = argparse.ArgumentParser()
         parser.add_argument("--model-name", type=str, default="./HuatuoGPT2_7B/")
         parser.add_argument("--device", type=str, choices=["cuda", "cpu"], default="cuda")
@@ -41,3 +41,15 @@ class HealthAssistantServer:
         self.engine.stop()
         del self.history
         del self.engine
+
+
+def init_logging():
+    logger = logging.getLogger()
+
+    fh = logging.FileHandler('logger.log')
+    fh.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s %(filename)s[%(lineno)d]: %(levelname)s: %(message)s')
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
+    logger.info('Finish init_logging')

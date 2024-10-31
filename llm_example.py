@@ -1,10 +1,10 @@
 import logging
 
-from llm.server_v1 import HealthAssistantServer
+from llm.server_v1 import HealthAssistantServer, init_logging
 
 if __name__ == '__main__':
 
-    logging.basicConfig(filename='logger.log', level=logging.INFO)
+    init_logging()
 
     # step 1：初始化LLM
     server = HealthAssistantServer()
@@ -18,4 +18,4 @@ if __name__ == '__main__':
         # 调用 server.generate()，传入问题，返回答案
         # 可能要等很久。。。
         answer = server.generate(query)
-        print(answer)
+        print(f"HuatuoGPT: {answer}")

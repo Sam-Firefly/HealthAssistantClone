@@ -1,6 +1,8 @@
 import logging
 import platform
+import threading
 import torch
+
 from queue import Queue
 from transformers import AutoTokenizer
 from transformers import AutoModelForCausalLM
@@ -11,36 +13,37 @@ class LlmEngine:
 
         logging.info('Starting LlmEngine...')
 
+        self.stop = True  # 停止标志
+        self.process = None
+
         self.args = args
 
-        if args.device == "cuda":
+        if self.args.device == "cuda":
             kwargs = {"torch_dtype": torch.float32}
-            if args.num_gpus == "auto":
+            if self.args.num_gpus == "auto":
                 kwargs["device_map"] = "auto"
             else:
-                num_gpus = int(args.num_gpus)
+                num_gpus = int(self.args.num_gpus)
                 if num_gpus != 1:
                     kwargs.update({
                         "device_map": "auto",
-                        "max_memory": {i: "13GiB" for i in range(num_gpus)},
+                        "max_memory": {i: "22GiB" for i in range(num_gpus)},
                     })
-        elif args.device == "cpu":
+        elif self.args.device == "cpu":
             kwargs = {}
         else:
-            raise ValueError(f"Invalid device: {args.device}")
+            raise ValueError(f"Invalid device: {self.args.device}")
 
         logging.info('Initializing tokenizer and model...')
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            args.model_name,
+            self.args.model_name,
             padding_side="right",
             use_fast=True,
             trust_remote_code=True
         )
-        self.model = AutoModelForCausalLM.from_pretrained(args.model_name, trust_remote_code=True, **kwargs)
-        if args.device == "cuda" and args.num_gpus == 1:
-            self.model.cuda()
-
+        self.model = AutoModelForCausalLM.from_pretrained(self.args.model_name, trust_remote_code=True, **kwargs)
+        self.model.cuda()
         self.model = self.model.eval()
 
         logging.info('Finished initializing tokenizer and model.')
@@ -48,13 +51,20 @@ class LlmEngine:
         self.os_name = platform.system()
         self.clear_command = 'cls' if self.os_name == 'Windows' else 'clear'
         self.history: dict = {}
-        # self.taskQueue = Queue()
-        # self.resultQueue = Queue()
-        #
-        # logging.info('Start new Thread...')
-        #
-        # self.process = threading.Thread(target=self.listen, args=[self.taskQueue, self.resultQueue])
-        # self.process.start()
+        self.taskQueue = Queue()
+        self.resultQueue = Queue()
+
+        self.start_listening()
+
+    def start_listening(self):
+        logging.info('Start new Thread...')
+        self.stop = False
+        self.process = threading.Thread(target=self.listen, args=[self.taskQueue, self.resultQueue])
+        self.process.start()
+
+    def stop_listening(self):
+        self.stop = True
+        self.taskQueue.put(("stop", []), block=True, timeout=None)
 
     def listen(self, task_queue: Queue, result_queue: Queue):
 
@@ -63,11 +73,14 @@ class LlmEngine:
         while True:
             query, history = task_queue.get(block=True, timeout=None)
 
-            logging.info(f'Received query {query}')
+            if self.stop and query == "stop":
+                logging.warning("Got stop command, stop listening...")
+                break
 
-            gen_tokens_cnt = 0
-            result = ""
+            logging.info(f'Start generating...')
+
             outputs = ""
+
             for outputs in self.forward_stream(
                     query,
                     history,
@@ -76,21 +89,26 @@ class LlmEngine:
                     repetition_penalty=1.2,
                     context_len=1024
             ):
+                # 模型偶尔会开始自己编对话。。。
+                if "病人" in outputs:
+                    logging.warning("Got \"病人\" in Outputs, stop generating.")
+                    outputs = outputs[:outputs.find("<")]
+                    outputs = outputs.strip()
+                    break
                 outputs = outputs.strip()
+                # 如果 outputs 以 "：" 或 ":"开头，则删掉
+                while outputs.startswith("：") or outputs.startswith(":"):
+                    logging.warning(f'Got \"：\" at the start of Outputs, delete it.')
+                    outputs = outputs[1:].strip()
 
-                logging.info('Generated tokens: %s', outputs)
+            logging.info('Output: %s', outputs)
 
-                new_token_len = len(outputs)
-                if new_token_len - 1 > gen_tokens_cnt:
-                    result += outputs[gen_tokens_cnt:new_token_len - 1] + "\n"
-                    gen_tokens_cnt = new_token_len - 1
-            result += outputs[gen_tokens_cnt:]
-
-            logging.info('Output: %s', result)
-
-            result_queue.put(result)
+            result_queue.put(outputs)
 
     def generate(self, query: str, query_id: int = 0) -> str:
+
+        logging.info(f'Received query {query}')
+
         if query_id not in self.history:
             self.history[query_id] = []
         if query == "clear":
@@ -98,38 +116,14 @@ class LlmEngine:
             return ""
         history = self.history[query_id]
 
-        # logging.info('Put new task into queue...')
-        #
-        # self.taskQueue.put((query, history), block=True, timeout=None)
-        # result = self.resultQueue.get(block=True, timeout=None)
-        # self.history[query_id] = history + [(query, result)]
-        #
-        # logging.info('Get result from queue...')
+        logging.info('Put new task into queue...')
 
-        logging.info(f'Received query {query}')
+        self.taskQueue.put((query, history), block=True, timeout=None)
 
-        gen_tokens_cnt = 0
-        result = ""
-        outputs = ""
-        for outputs in self.forward_stream(
-                query,
-                history,
-                max_new_tokens=self.args.max_new_tokens,
-                temperature=self.args.temperature,
-                repetition_penalty=1.2,
-                context_len=1024
-        ):
-            outputs = outputs.strip()
+        logging.info('Waiting result from queue...')
 
-            logging.info('Generated tokens: %s', outputs)
-
-            new_token_len = len(outputs)
-            if new_token_len - 1 > gen_tokens_cnt:
-                result += outputs[gen_tokens_cnt:new_token_len - 1] + "\n"
-                gen_tokens_cnt = new_token_len - 1
-        result += outputs[gen_tokens_cnt:]
-
-        logging.info('Output: %s', result)
+        result = self.resultQueue.get(block=True, timeout=None)
+        self.history[query_id] = history + [(query, result)]
 
         return result
 
@@ -144,6 +138,7 @@ class LlmEngine:
             context_len=1024,
             stream_interval=2
     ):
+
         def load_history(_query, _history, eos):
             if not _history:
                 return f"""一位用户和智能医疗大模型HuatuoGPT之间的对话。对于用户的医疗问诊，HuatuoGPT给出准确的、详细的、温暖的指导建议。
@@ -159,6 +154,9 @@ class LlmEngine:
                 return _prompt
 
         prompt = load_history(query, history, self.tokenizer.eos_token)
+
+        logging.info('Prompt: %s', prompt)
+
         input_ids = self.tokenizer(prompt).input_ids
         output_ids = list(input_ids)
 
@@ -226,5 +224,6 @@ class LlmEngine:
         del past_key_values
 
     def stop(self):
+        self.stop_listening()
         del self.model
         del self.tokenizer
