@@ -51,5 +51,6 @@ def init_logging():
     formatter = logging.Formatter('%(asctime)s %(filename)s[%(lineno)d]: %(levelname)s: %(message)s')
     fh.setFormatter(formatter)
     logger.addHandler(fh)
+    logger.setLevel(logging.INFO)
 
     logger.info('Finish init_logging')
