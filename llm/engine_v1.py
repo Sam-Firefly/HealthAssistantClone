@@ -13,7 +13,7 @@ class LlmEngine:
 
         logging.info('Starting LlmEngine...')
 
-        self.stop = True  # 停止标志
+        self.stop_signal = True  # 停止标志
         self.process = None
 
         self.args = args
@@ -58,12 +58,12 @@ class LlmEngine:
 
     def start_listening(self):
         logging.info('Start new Thread...')
-        self.stop = False
+        self.stop_signal = False
         self.process = threading.Thread(target=self.listen, args=[self.taskQueue, self.resultQueue])
         self.process.start()
 
     def stop_listening(self):
-        self.stop = True
+        self.stop_signal = True
         self.taskQueue.put(("stop", []), block=True, timeout=None)
 
     def listen(self, task_queue: Queue, result_queue: Queue):
@@ -73,7 +73,7 @@ class LlmEngine:
         while True:
             query, history = task_queue.get(block=True, timeout=None)
 
-            if self.stop and query == "stop":
+            if self.stop_signal and query == "stop":
                 logging.warning("Got stop command, stop listening...")
                 break
 
