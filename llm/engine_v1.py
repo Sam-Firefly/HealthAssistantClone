@@ -86,7 +86,6 @@ class LlmEngine:
                     history,
                     max_new_tokens=self.args.max_new_tokens,
                     temperature=self.args.temperature,
-                    repetition_penalty=1.2,
                     context_len=1024
             ):
                 # 模型偶尔会开始自己编对话。。。
@@ -134,7 +133,6 @@ class LlmEngine:
             history,
             max_new_tokens=512,
             temperature=0.2,
-            repetition_penalty=1.2,
             context_len=1024,
             stream_interval=2
     ):
