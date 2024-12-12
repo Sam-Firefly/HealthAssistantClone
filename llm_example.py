@@ -1,5 +1,3 @@
-import logging
-
 from llm.server_v1 import HealthAssistantServer, init_logging
 
 if __name__ == '__main__':
