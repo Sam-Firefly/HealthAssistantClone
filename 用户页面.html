@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>医疗咨询平台</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+        height: 90vh;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        height: 90%;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .chat-box {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        height: 80%;
+        overflow-y: scroll;
+        margin-bottom: 20px;
+      }
+
+      .message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      .user-message {
+        background-color: #e9ecef;
+        text-align: right;
+      }
+
+      .bot-message {
+        background-color: #007bff;
+        color: white;
+        text-align: left;
+      }
+
+      .input-area {
+        display: flex;
+        align-items: center;
+      }
+
+      #user-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+
+      #send-btn {
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>医疗咨询平台</h1>
+        <p>请以医嘱为准</p>
+      </div>
+      <div class="chat-box" id="chat-box">
+        <!-- 聊天消息将在这里显示 -->
+      </div>
+      <div class="input-area">
+        <input type="text" id="user-input" placeholder="输入您的问题..." />
+        <button id="send-btn">发送</button>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = 'http://127.0.0.1:5000';
+      
+      const userInput = document.getElementById('user-input');
+      const sendBtn = document.getElementById('send-btn');
+      const chatBox = document.getElementById('chat-box');
+      
+      // 修改以开启新对话
+      let query_id = 0;
+      
+      // 显示询问
+      const showUserMessage = (message) => {
+        chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
+        chatBox.scrollTo({
+          top: chatBox.scrollHeight,
+          behavior: 'smooth',
+        });
+      };
+      
+      // 显示回答
+      const showBotMessage = (message) => {
+        chatBox.innerHTML += `<div class="message bot-message">${message}</div>`;
+        chatBox.scrollTo({
+          top: chatBox.scrollHeight,
+          behavior: 'smooth',
+        });
+      };
+      
+      window.onload = () => {
+        // 页面加载完成后，显示机器人的初始消息
+        const initialMessage =
+          '您好！我是医疗咨询助手华佗GPT-II。请问有什么可以帮到您？';
+        showBotMessage(initialMessage);
+      };
+      
+      // 监听输入框的键盘按下事件
+      userInput.addEventListener('keydown', (event) => {
+        // 检查是否按下了回车键
+        if (event.key === 'Enter') {
+          // 阻止默认的表单提交行为
+          event.preventDefault();
+          // 调用发送消息的函数
+          sendMessage();
+        }
+      });
+      
+      // 监听发送按钮的点击事件
+      sendBtn.addEventListener('click', (event) => {
+        sendMessage();
+      });
+      
+      // 提交消息事件。
+      function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+          // 显示用户消息
+          showUserMessage(message);
+          // 清空输入框
+          userInput.value = '';
+          // 发送请求
+          handlePostingMessage(message);
+        }
+      }
+      
+      // 提交问题。
+      function handlePostingMessage(message) {
+        sendToServerAndGetResponse(message).then((ansJson) => {
+          // 确保从后端获取到的 JSON 数据正确解析
+          const ans = ansJson.reply;
+          showBotMessage(ans);
+        }).catch((error) => {
+          console.error('Error:', error);
+          showBotMessage('抱歉，服务器出现错误。');
+        });
+      }
+      
+      // 发送问题到服务器并获取回复。
+      function sendToServerAndGetResponse(message) {
+        return fetch(API_URL + '/api/response', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message,
+            query_id,
+          }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then((data) => {
+            return data;
+          });
+      }
+    </script>
+  </body>
+</html>
